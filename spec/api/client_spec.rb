@@ -64,6 +64,26 @@ describe "RSolr::Client" do
         end
       }.should raise_error(RSolr::Error::Http)
     end
+    it "should not retry a 503 if the retry-after is not present" do
+      client.connection.should_receive(:execute).exactly(1).times.and_return(
+        {:status => 503, :body => "{}", :headers => {}}
+      )
+      lambda {
+        Timeout.timeout(0.5) do
+          client.execute request_context
+        end
+      }.should raise_error(RSolr::Error::Http)
+    end
+    it "should not retry a 503 if the retry-after is present but blank" do
+      client.connection.should_receive(:execute).exactly(1).times.and_return(
+        {:status => 503, :body => "{}", :headers => {'Retry-After' => ''}}
+      )
+      lambda {
+        Timeout.timeout(0.5) do
+          client.execute request_context
+        end
+      }.should raise_error(RSolr::Error::Http)
+    end
   end
 
   context "post" do

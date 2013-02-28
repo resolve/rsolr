@@ -193,6 +193,8 @@ class RSolr::Client
     retry_after = Array(response[:headers]['Retry-After'] || response[:headers]['retry-after']).flatten.first.to_s
     if retry_after =~ /\A[0-9]+\Z/
       retry_after = retry_after.to_i
+    elsif retry_after =~ /\A\s*\Z/
+      retry_after = nil # Blank or missing Retry-After, treat as nil
     else
       begin
         retry_after_date = DateTime.parse(retry_after)
